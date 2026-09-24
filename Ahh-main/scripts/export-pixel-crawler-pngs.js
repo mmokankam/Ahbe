@@ -56,8 +56,8 @@ async function convertAseprite(filePath) {
   const frames = [];
 
   for (const frame of data.frames || []) {
-    const width = Number(frame.width) || Number(frame.header?.width) || 1;
-    const height = Number(frame.height) || Number(frame.header?.height) || 1;
+    const width = Number(data.header?.width) || Number(frame.width) || Number(frame.header?.width) || 1;
+    const height = Number(data.header?.height) || Number(frame.height) || Number(frame.header?.height) || 1;
     const canvas = createCanvas(width, height);
     const context = canvas.getContext('2d');
     context.imageSmoothingEnabled = false;

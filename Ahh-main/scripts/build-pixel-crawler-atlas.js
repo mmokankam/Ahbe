@@ -136,8 +136,8 @@ async function createAsepriteEntries(files) {
     const frameEntries = Array.isArray(data.frames) ? data.frames : [];
 
     frameEntries.forEach((frame, frameIndex) => {
-      const width = Number(frame.width) || Number(frame.header?.width) || 1;
-      const height = Number(frame.height) || Number(frame.header?.height) || 1;
+      const width = Number(data.header?.width) || Number(frame.width) || Number(frame.header?.width) || 1;
+      const height = Number(data.header?.height) || Number(frame.height) || Number(frame.header?.height) || 1;
       const canvas = createCanvas(width, height);
       const context = canvas.getContext('2d');
       context.imageSmoothingEnabled = false;
@@ -193,7 +193,7 @@ function packEntries(entries) {
   const width = Math.min(
     MAX_ATLAS_WIDTH,
     Math.max(
-      2048,
+      4096,
       nextPowerOfTwo(Math.max(...sortedEntries.map((entry) => entry.width + PADDING * 2)))
     )
   );
