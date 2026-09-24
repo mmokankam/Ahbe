@@ -301,11 +301,11 @@ export default class UIScene extends Phaser.Scene {
     const maxHealth = mainScene?.maxPlayerHealth ?? 1135;
     this.healthText.setText(`Health: ${Math.max(0, currentHealth)} / ${maxHealth}`);
     this.levelValue.setText(String(mainScene?.playerLevel ?? 53));
-    this.layout();
   }
 
   update() {
     this.updateHealth();
+    this.layout();
   }
 
   showTooltip(text) {

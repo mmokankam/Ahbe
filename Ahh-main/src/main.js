@@ -25,16 +25,11 @@ const STANDARD_DISPLAY_W = 64;
 const STANDARD_DISPLAY_H = 64;
 const STANDARD_HITBOX_W = 32;
 const STANDARD_HITBOX_H = 48;
-const MAP_TILES_W = 140;
-const MAP_TILES_H = 140;
+const MAP_TILES_W = 50;
+const MAP_TILES_H = 50;
 const TILE_SIZE = 16;
 const WORLD_WIDTH = MAP_TILES_W * TILE_SIZE;
 const WORLD_HEIGHT = MAP_TILES_H * TILE_SIZE;
-const TERRAIN_TILESET_INDEX = {
-  grass: 0,
-  dirt: 1,
-  water: 2
-};
 const PLAYER_SPEED = 150;
 const RUN_SPEED = 240;
 const MAX_PLAYER_HEALTH = 100;
@@ -260,98 +255,43 @@ class MainScene extends Phaser.Scene {
     this.safePlayAnimation(this.player, idleKey, `${weaponSuffix}_idle_front`);
   }
 
-  createTerrainData() {
-    const grassTile = TERRAIN_TILESET_INDEX.grass + 1;
-    const dirtTile = TERRAIN_TILESET_INDEX.dirt + 1;
-    const waterTile = TERRAIN_TILESET_INDEX.water + 1;
+  createTerrainData(TILES) {
     const terrain = Array.from(
       { length: MAP_TILES_H },
-      () => Array(MAP_TILES_W).fill(grassTile)
+      () => Array(MAP_TILES_W).fill(TILES.GRASS)
     );
     const water = Array.from(
       { length: MAP_TILES_H },
       () => Array(MAP_TILES_W).fill(0)
     );
-    const riverCenters = [];
 
     for (let y = 0; y < MAP_TILES_H; y += 1) {
-      riverCenters[y] = Math.round(
-        16 + Math.sin(y * 0.12) * 7 + Math.sin(y * 0.045) * 4
+      const riverRight = Phaser.Math.Clamp(
+        Math.round(7 + Math.sin(y * 0.2) * 2),
+        3,
+        9
       );
-    }
 
-    for (let y = 0; y < MAP_TILES_H; y += 1) {
-      const riverCenter = riverCenters[y];
-      for (let x = 0; x < MAP_TILES_W; x += 1) {
-        const riverDistance = Math.abs(x - riverCenter);
-        if (riverDistance <= 2) {
-          water[y][x] = 1;
-        } else if (riverDistance <= 4) {
-          terrain[y][x] = dirtTile;
-        }
+      for (let x = 0; x <= riverRight; x += 1) {
+        water[y][x] = TILES.WATER;
+      }
+
+      for (let x = riverRight + 1; x <= riverRight + 2 && x < MAP_TILES_W; x += 1) {
+        terrain[y][x] = TILES.DIRT;
       }
     }
 
-    const spawnCenterX = 70;
-    const spawnCenterY = 70;
-    for (let y = 58; y <= 82; y += 1) {
-      for (let x = 56; x <= 84; x += 1) {
-        const distance = ((x - spawnCenterX) / 14) ** 2 + ((y - spawnCenterY) / 12) ** 2;
-        if (distance <= 1) {
-          terrain[y][x] = dirtTile;
-        }
-      }
-    }
-
-    for (let y = 58; y <= 82; y += 1) {
-      const riverCenter = riverCenters[y];
-      const pathProgress = (y - 70) / 14;
-      const pathCenter = spawnCenterX + (riverCenter - spawnCenterX) * Math.max(0, pathProgress);
-      for (let x = 0; x < MAP_TILES_W; x += 1) {
-        if (Math.abs(x - pathCenter) <= 1.5 && water[y][x] === 0) {
-          terrain[y][x] = dirtTile;
-        }
-      }
-    }
-
-    for (let y = 63; y <= 81; y += 1) {
-      for (let x = 88; x <= 106; x += 1) {
-        terrain[y][x] = dirtTile;
-      }
-    }
-
-    for (let y = 18; y < 122; y += 1) {
-      for (let x = 94; x <= 97; x += 1) {
-        if (water[y][x] === 0) {
-          terrain[y][x] = dirtTile;
-        }
-      }
-    }
-    for (let x = 96; x < 130; x += 1) {
-      for (let y = 68; y <= 71; y += 1) {
-        if (water[y][x] === 0) {
-          terrain[y][x] = dirtTile;
-        }
-      }
-    }
-    for (let y = 70; y < 112; y += 1) {
-      for (let x = 114; x <= 117; x += 1) {
-        if (water[y][x] === 0) {
-          terrain[y][x] = dirtTile;
-        }
-      }
-    }
-    for (let y = 106; y < 124; y += 1) {
-      for (let x = 108; x < 126; x += 1) {
-        terrain[y][x] = dirtTile;
+    for (let y = 10; y <= 18; y += 1) {
+      for (let x = 34; x <= 47; x += 1) {
+        terrain[y][x] = TILES.DIRT;
       }
     }
 
     return { terrain, water };
   }
 
-  createTerrain() {
-    const { terrain, water } = this.createTerrainData();
+  createTerrain(TILES) {
+    const { terrain, water } = this.createTerrainData(TILES);
     const terrainMap = this.make.tilemap({
       data: terrain,
       tileWidth: TILE_SIZE,
@@ -397,11 +337,6 @@ class MainScene extends Phaser.Scene {
       wallData[y][0] = 1;
       wallData[y][MAP_TILES_W - 1] = 1;
     }
-    for (let y = 108; y < 124; y += 1) {
-      for (let x = 108; x < 126; x += 1) {
-        dungeonData[y][x] = 1;
-      }
-    }
 
     const wallMap = this.make.tilemap({ data: wallData, tileWidth: TILE_SIZE, tileHeight: TILE_SIZE });
     const wallTileset = wallMap.addTilesetImage(
@@ -443,7 +378,8 @@ class MainScene extends Phaser.Scene {
     const sprite = this.add.image(x, y, 'pixel_crawler_environment', frame);
     sprite.setOrigin(0.5, 1);
     sprite.setScale(scale);
-    return this.setYSortedDepth(sprite);
+    sprite.setDepth(sprite.y);
+    return sprite;
   }
 
   addWorldObstacle(x, y, width, height) {
@@ -465,11 +401,12 @@ class MainScene extends Phaser.Scene {
     fence.setOrigin(0.5, 1);
     fence.setRotation(rotation);
     fence.setScale(0.8);
-    return this.setYSortedDepth(fence, 5.5);
+    fence.setDepth(fence.y);
+    return fence;
   }
 
   createWorldDecor() {
-    const grassTile = TERRAIN_TILESET_INDEX.grass + 1;
+    const grassTile = this.tiles.GRASS;
     const treeFrames = [
       'environment_props_static_trees_model_02_size_02',
       'environment_props_static_trees_model_02_size_03',
@@ -566,9 +503,70 @@ class MainScene extends Phaser.Scene {
       this.addFenceSegment(fenceRight, y, -Math.PI / 2);
       this.addWorldObstacle(fenceRight, y - 3, 6, 18);
     }
+    this.placeDecorations();
     this.createCityDistricts();
     this.createDungeonContent();
     this.createExplorationLandmarks();
+  }
+
+  placeDecorations() {
+    const place = (frame, x, y, scale) => {
+      const object = this.add.image(x, y, 'pixel_crawler_environment', frame);
+      object.setOrigin(0.5, 1);
+      object.setScale(scale);
+      object.setDepth(object.y);
+      return object;
+    };
+
+    const houseX = 39 * TILE_SIZE;
+    const houseY = 10 * TILE_SIZE;
+    this.townSpawn = { x: houseX, y: houseY + 54 };
+    place('environment_structures_buildings_shadows', houseX, houseY, 0.28);
+    const house = place('environment_structures_buildings_walls', houseX, houseY, 0.28);
+    place('environment_structures_buildings_roofs', houseX, houseY - 10, 0.28);
+    this.addWorldObstacle(houseX, houseY - 56, 176, 100);
+
+    const workbench = place(
+      'environment_structures_stations_workbench_workbench',
+      houseX - 58,
+      houseY + 54,
+      0.2
+    );
+    const barrel = place('environment_props_static_resources', houseX + 62, houseY + 50, 0.15);
+    this.addWorldObstacle(workbench.x, workbench.y - 8, 28, 12);
+    this.addWorldObstacle(barrel.x, barrel.y - 8, 18, 12);
+
+    const fenceLeft = houseX - 150;
+    const fenceRight = houseX + 150;
+    const fenceTop = houseY + 70;
+    const fenceBottom = houseY + 170;
+    for (let x = fenceLeft; x <= fenceRight; x += 26) {
+      const topFence = this.addFenceSegment(x, fenceTop);
+      const bottomFence = this.addFenceSegment(x, fenceBottom, Math.PI);
+      topFence.setDepth(topFence.y);
+      bottomFence.setDepth(bottomFence.y);
+    }
+    for (let y = fenceTop + 26; y < fenceBottom; y += 26) {
+      const leftFence = this.addFenceSegment(fenceLeft, y, Math.PI / 2);
+      const rightFence = this.addFenceSegment(fenceRight, y, -Math.PI / 2);
+      leftFence.setDepth(leftFence.y);
+      rightFence.setDepth(rightFence.y);
+    }
+
+    const treeFrames = [
+      'environment_props_static_trees_model_01_size_03',
+      'environment_props_static_trees_model_02_size_03',
+      'environment_props_static_trees_model_03_size_03'
+    ];
+    const treePositions = [
+      [150, 120], [260, 220], [360, 110], [470, 250], [560, 120],
+      [110, 390], [240, 470], [360, 380], [500, 460], [700, 400],
+      [180, 700], [330, 620], [510, 720], [700, 650]
+    ];
+    treePositions.forEach(([x, y], index) => {
+      const tree = place(treeFrames[index % treeFrames.length], x, y, 0.24 + (index % 3) * 0.03);
+      this.addWorldObstacle(tree.x, tree.y - 7, Math.max(12, tree.displayWidth * 0.14), 10);
+    });
   }
 
   createCityDistricts() {
@@ -716,6 +714,8 @@ class MainScene extends Phaser.Scene {
   }
 
   create() {
+    const TILES = { GRASS: 1, DIRT: 2, WATER: 3 };
+    this.tiles = TILES;
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.roundPixels = true;
@@ -730,9 +730,9 @@ class MainScene extends Phaser.Scene {
       1
     );
     worldBackdrop.setDepth(-1);
-    this.createTerrain();
+    this.createTerrain(TILES);
     this.worldObstacles = this.physics.add.staticGroup();
-    this.createWorldDecor();
+    this.placeDecorations();
     this.createAnimations();
     this.scene.launch('UIScene');
 

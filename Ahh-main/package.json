@@ -7,6 +7,7 @@
     "predev": "node scripts/convert-assets.js && node scripts/build-pixel-crawler-atlas.js",
     "dev": "vite --host 0.0.0.0 --port 4173",
     "build:pixel-crawler-atlas": "node scripts/build-pixel-crawler-atlas.js",
+    "export:pixel-crawler-pngs": "node scripts/export-pixel-crawler-pngs.js",
     "prebuild": "node scripts/convert-assets.js && node scripts/build-pixel-crawler-atlas.js",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4173"
