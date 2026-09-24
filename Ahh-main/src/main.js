@@ -521,18 +521,18 @@ class MainScene extends Phaser.Scene {
     const houseX = 39 * TILE_SIZE;
     const houseY = 10 * TILE_SIZE;
     this.townSpawn = { x: houseX, y: houseY + 54 };
-    place('environment_structures_buildings_shadows', houseX, houseY, 0.28);
-    const house = place('environment_structures_buildings_walls', houseX, houseY, 0.28);
-    place('environment_structures_buildings_roofs', houseX, houseY - 10, 0.28);
+    place('aseprite_environment_structures_buildings_shadows_aseprite_00', houseX, houseY, 0.28);
+    const house = place('aseprite_environment_structures_buildings_walls_aseprite_00', houseX, houseY, 0.28);
+    place('aseprite_environment_structures_buildings_roofs_aseprite_00', houseX, houseY - 10, 0.28);
     this.addWorldObstacle(houseX, houseY - 56, 176, 100);
 
     const workbench = place(
-      'environment_structures_stations_workbench_workbench',
+      'aseprite_environment_structures_stations_workbench_workbench_aseprite_00',
       houseX - 58,
       houseY + 54,
       0.2
     );
-    const barrel = place('environment_props_static_resources', houseX + 62, houseY + 50, 0.15);
+    const barrel = place('aseprite_environment_props_static_resources_aseprite_00', houseX + 62, houseY + 50, 0.15);
     this.addWorldObstacle(workbench.x, workbench.y - 8, 28, 12);
     this.addWorldObstacle(barrel.x, barrel.y - 8, 18, 12);
 
@@ -554,9 +554,13 @@ class MainScene extends Phaser.Scene {
     }
 
     const treeFrames = [
-      'environment_props_static_trees_model_01_size_03',
-      'environment_props_static_trees_model_02_size_03',
-      'environment_props_static_trees_model_03_size_03'
+      'aseprite_environment_props_static_trees_model_01_size_02_aseprite_00',
+      'aseprite_environment_props_static_trees_model_01_size_03_aseprite_00',
+      'aseprite_environment_props_static_trees_model_02_size_02_aseprite_00',
+      'aseprite_environment_props_static_trees_model_02_size_03_aseprite_00',
+      'aseprite_environment_props_static_trees_model_03_size_02_aseprite_00',
+      'aseprite_environment_props_static_trees_model_03_size_03_aseprite_00',
+      'aseprite_environment_props_static_trees_model_03_size_04_aseprite_00'
     ];
     const treePositions = [
       [150, 120], [260, 220], [360, 110], [470, 250], [560, 120],
@@ -566,6 +570,19 @@ class MainScene extends Phaser.Scene {
     treePositions.forEach(([x, y], index) => {
       const tree = place(treeFrames[index % treeFrames.length], x, y, 0.24 + (index % 3) * 0.03);
       this.addWorldObstacle(tree.x, tree.y - 7, Math.max(12, tree.displayWidth * 0.14), 10);
+    });
+
+    const rockPositions = [[90, 180], [320, 150], [450, 330], [620, 240], [760, 520], [280, 540], [590, 690]];
+    rockPositions.forEach(([x, y], index) => {
+      const rock = place(
+        index % 2 === 0
+          ? 'aseprite_environment_props_static_rocks_aseprite_00'
+          : 'aseprite_environment_props_static_resources_aseprite_00',
+        x,
+        y,
+        0.1 + (index % 3) * 0.02
+      );
+      this.addWorldObstacle(rock.x, rock.y - 4, 12, 8);
     });
   }
 
